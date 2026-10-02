@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mana House — Type Studio</title>
+<meta name="description" content="Estúdio de tipografia experimental. Crie com Heat e Cold e exporte imagens ou loops animados.">
+<script>
+(() => {
+  let failure=null;
+  const fallback={missingAsset:'Um arquivo do app está faltando. Extraia todo o ZIP e mantenha a pasta assets ao lado de index.html.',startupFailed:'Não foi possível iniciar.'};
+  const show=()=>{
+    const box=document.getElementById('error'),status=document.getElementById('status');
+    if(!failure||!box)return;
+    box.textContent=globalThis.ManaI18n?ManaI18n.t(failure.key,failure.values):failure.key==='missingAsset'?fallback.missingAsset:'Não foi possível iniciar: '+failure.values.error;
+    box.style.display='block';if(status)status.textContent=globalThis.ManaI18n?ManaI18n.t('startupFailed'):fallback.startupFailed;
+  };
+  window.addEventListener('error',event=>{
+    const target=event.target;
+    if(target&&target!==window&&(target.tagName==='SCRIPT'||target.tagName==='LINK'))failure={key:'missingAsset'};
+    else if(event.message)failure={key:'startupError',values:{error:event.message}};
+    show();
+  },true);
+  window.addEventListener('unhandledrejection',event=>{failure={key:'startupError',values:{error:event.reason?.message||String(event.reason)}};show();});
+  document.addEventListener('DOMContentLoaded',show);window.addEventListener('mana:language',show);
+})();
+</script>
+<link rel="stylesheet" href="assets/style.css">
+<script src="assets/font-data.js"></script>
+</head>
+<body data-mode="heat">
+<header class="topbar">
+ <div class="brand"><h1 class="brand-name">Mana House</h1><span class="brand-divider" aria-hidden="true"></span><span class="brand-descriptor" data-i18n="studio">Estúdio tipográfico</span></div>
+ <div class="language" role="group" aria-label="Idioma" data-i18n-aria="language"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/></svg><div class="language-switch"><button id="languagePT" type="button" lang="pt-BR" aria-label="Português" aria-pressed="true">PT</button><button id="languageEN" type="button" lang="en" aria-label="English" aria-pressed="false">EN</button></div></div>
+</header>
+<div class="app">
+ <main class="workspace" id="workspace" aria-label="Área de trabalho" data-i18n-aria="workspace">
+  <div class="workspace-bar"><div class="preview-title"><span data-i18n="preview">Prévia</span><span aria-hidden="true">/</span><span class="preview-mode" id="previewMode">Heat</span></div><span class="dimensions">2400 × 1350 px</span></div>
+  <div class="canvas-space" id="canvasSpace"><noscript>Ative o JavaScript, extraia o ZIP e abra index.html no seu navegador.</noscript><div class="stage" id="stage"><canvas id="output" width="2400" height="1350" aria-label="Prévia tipográfica · Heat"></canvas><svg id="regionOverlay" viewBox="0 0 2400 1350" xmlns="http://www.w3.org/2000/svg" aria-label="Posicionar regiões do efeito" data-i18n-aria="regionOverlay" hidden></svg></div></div>
+  <div class="region-toolbar" id="regionToolbar" hidden><span id="regionHint"></span><button class="button" id="finishLocation" type="button" data-i18n="done">Concluir</button></div>
+  <div class="footer"><div class="status-wrap"><span class="status-dot" aria-hidden="true"></span><span id="status" role="status" aria-live="polite">Carregando fontes…</span></div><span class="canvas-caption" id="previewKind" data-i18n="staticPreview">Imagem estática</span></div>
+  <div class="error" id="error" role="alert"></div>
+ </main>
+ <aside class="controls" aria-label="Composição" data-i18n-aria="composition">
+  <fieldset id="editorFields">
+   <h2 class="section-heading" data-i18n="composition">Composição</h2>
+   <div class="mode-switch effect-switch" role="group" aria-label="Efeito" data-i18n-aria="effect"><button id="heatMode" type="button" aria-pressed="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 19c-4-5 5-7 1-14M12 19c-4-5 5-7 1-14M18 19c-4-5 5-7 1-14"/></svg><span>Heat</span></button><button id="coldMode" type="button" aria-pressed="false"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9 5l3 3 3-3M9 19l3-3 3 3M4.5 11l4-1-.5-4M16 18l-.5-4 4-1M4.5 13l4 1-.5 4M16 6l-.5 4 4 1"/></svg><span>Cold</span></button></div>
+   <div class="field"><label class="field-label" for="textInput" data-i18n="text">Seu texto</label><input class="text-input" id="textInput" type="text" value="Heat," maxlength="42" autocomplete="off" spellcheck="false"></div>
+   <div class="field"><label class="field-label" for="fontSelect" data-i18n="font">Fonte</label><div class="select-wrap"><select id="fontSelect">
+          <optgroup label="Season Mix">
+            <option value="SeasonMixLight">Light</option>
+            <option value="SeasonMixLightItalic">Light Italic</option>
+            <option value="SeasonMixRegular">Regular</option>
+            <option value="SeasonMixRegularItalic">Regular Italic</option>
+            <option value="SeasonMixMedium">Medium</option>
+            <option value="SeasonMixMediumItalic">Medium Italic</option>
+            <option value="SeasonMixSemiBold">SemiBold</option>
+            <option value="SeasonMixSemiBoldItalic">SemiBold Italic</option>
+            <option value="SeasonMixBold">Bold</option>
+            <option value="SeasonMixBoldItalic">Bold Italic</option>
+            <option value="SeasonMixHeavy">Heavy</option>
+            <option value="SeasonMixHeavyItalic">Heavy Italic</option>
+          </optgroup>
+          <optgroup label="Season Sans">
+            <option value="SeasonSansLight">Light</option>
+            <option value="SeasonSansLightItalic">Light Italic</option>
+            <option value="SeasonSansRegular">Regular</option>
+            <option value="SeasonSansRegularItalic">Regular Italic</option>
+            <option value="SeasonSansMedium" selected>Season Sans · Medium</option>
+            <option value="SeasonSansMediumItalic">Medium Italic</option>
+            <option value="SeasonSansSemiBold">SemiBold</option>
+            <option value="SeasonSansSemiBoldItalic">SemiBold Italic</option>
+            <option value="SeasonSansBold">Bold</option>
+            <option value="SeasonSansBoldItalic">Bold Italic</option>
+            <option value="SeasonSansHeavy">Heavy</option>
+            <option value="SeasonSansHeavyItalic">Heavy Italic</option>
+          </optgroup>
+          <optgroup label="Season Serif">
+            <option value="SeasonSerifLight">Light</option>
+            <option value="SeasonSerifLightItalic">Light Italic</option>
+            <option value="SeasonSerifRegular">Regular</option>
+            <option value="SeasonSerifRegularItalic">Regular Italic</option>
+            <option value="SeasonSerifMedium">Medium</option>
+            <option value="SeasonSerifMediumItalic">Medium Italic</option>
+            <option value="SeasonSerifSemiBold">SemiBold</option>
+            <option value="SeasonSerifSemiBoldItalic">SemiBold Italic</option>
+            <option value="SeasonSerifBold">Bold</option>
+            <option value="SeasonSerifBoldItalic">Bold Italic</option>
+            <option value="SeasonSerifHeavy">Heavy</option>
+            <option value="SeasonSerifHeavyItalic">Heavy Italic</option>
+          </optgroup>
+        </select></div></div>
+   <div class="field"><div class="field-label"><span data-i18n="typeColor">Cor da tipografia</span><span class="value hex" id="typeHex">#C93200</span></div><div class="palette" id="typePalette" role="group" aria-label="Cor da tipografia" data-i18n-aria="typeColor"></div></div>
+   <div class="field"><div class="field-label"><span data-i18n="background">Fundo</span><span class="value hex" id="backgroundHex">#1A1A1A</span></div><div class="palette" id="backgroundPalette" role="group" aria-label="Fundo" data-i18n-aria="background"></div></div>
+   <button class="button wide randomize" id="randomize" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h3c4 0 8 12 12 12h3m-4-4 4 4-4 4M3 18h3c4 0 8-12 12-12h3m-4-4 4 4-4 4"/></svg><span data-i18n="randomize">Nova variação</span></button>
+   <details class="advanced" id="advancedControls"><summary><span data-i18n="advanced">Ajustes avançados</span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></summary><div class="advanced-content">
+    <div class="field range-field"><label class="field-label" for="fontSize"><span data-i18n="size">Tamanho da composição</span><span class="value" id="fontSizeValue">100%</span></label><input id="fontSize" type="range" min="35" max="135" step="1" value="100"></div>
+    <div id="heatControls"><div class="field range-field"><label class="field-label" for="expansion"><span data-i18n="expansion">Expansão</span><span class="value" id="expansionValue">36</span></label><input id="expansion" type="range" min="0" max="100" step="1" value="36"></div><div class="field range-field"><label class="field-label" for="expansionBlur"><span data-i18n="expansionBlur">Desfoque da expansão</span><span class="value" id="expansionBlurValue">26</span></label><input id="expansionBlur" type="range" min="0" max="100" step="1" value="26"></div><div class="field range-field"><label class="field-label" for="heatDeformations"><span data-i18n="deformationCount">Quantidade de deformações</span><span class="value" id="heatDeformationsValue">7</span></label><input id="heatDeformations" type="range" min="0" max="20" step="1" value="7"></div><div class="field range-field"><label class="field-label" for="heatStrength"><span data-i18n="deformation">Intensidade da deformação</span><span class="value" id="heatStrengthValue">50</span></label><input id="heatStrength" type="range" min="0" max="100" step="1" value="50"></div><div class="field range-field"><label class="field-label" for="heatBlur"><span data-i18n="blur">Desfoque</span><span class="value" id="heatBlurValue">70</span></label><input id="heatBlur" type="range" min="0" max="100" step="1" value="70"></div><div class="location-actions"><button class="button location" id="locateBlur" type="button" aria-pressed="false"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="12" rx="7" ry="5"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/></svg><span data-i18n="locateBlur">Posicionar desfoque</span></button><button class="button location" id="locateDeform" type="button" aria-pressed="false"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="12" rx="7" ry="5"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/></svg><span data-i18n="locateDeform">Posicionar deformações</span></button></div></div>
+    <div id="coldControls" hidden><div class="field range-field"><label class="field-label" for="contraction"><span data-i18n="contraction">Contração</span><span class="value" id="contractionValue">30</span></label><input id="contraction" type="range" min="0" max="100" step="1" value="30"></div><div class="field range-field"><label class="field-label" for="fragmentSpread"><span data-i18n="spread">Dispersão dos fragmentos</span><span class="value" id="fragmentSpreadValue">50</span></label><input id="fragmentSpread" type="range" min="0" max="100" step="1" value="50"></div><div class="field range-field"><label class="field-label" for="deformations"><span data-i18n="regions">Regiões de dissolução</span><span class="value" id="deformationsValue">9</span></label><input id="deformations" type="range" min="0" max="20" step="1" value="9"></div><div class="field range-field"><label class="field-label" for="deformationStrength"><span data-i18n="dissolution">Intensidade da dissolução</span><span class="value" id="deformationStrengthValue">60</span></label><input id="deformationStrength" type="range" min="0" max="100" step="1" value="60"></div><div class="field range-field"><label class="field-label" for="grainFade"><span data-i18n="grainFade">Dissolução granulada</span><span class="value" id="grainFadeValue">50</span></label><input id="grainFade" type="range" min="0" max="100" step="1" value="50"></div><div class="field range-field"><label class="field-label" for="frost"><span data-i18n="grain">Tamanho do grão</span><span class="value" id="frostValue">40</span></label><input id="frost" type="range" min="0" max="100" step="1" value="40"></div><div class="location-actions"><button class="button location" id="locateDissolution" type="button" aria-pressed="false"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="12" rx="7" ry="5"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/></svg><span data-i18n="locateDissolution">Posicionar dissolução</span></button></div></div>
+    <p class="hint" data-i18n="locationHelp">Arraste as elipses sobre a palavra para posicionar o efeito.</p>
+   </div></details>
+   <section class="loop-export" aria-labelledby="exportHeading">
+    <h2 class="section-heading" id="exportHeading" data-i18n="export">Exportar</h2>
+    <div class="mode-switch" role="group" aria-label="Tipo de exportação" data-i18n-aria="exportType"><button id="staticMode" type="button" aria-pressed="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.2"/><path d="m3 17 5-5 4 4 4-6 5 7"/></svg><span data-i18n="static">Imagem</span></button><button id="videoMode" type="button" aria-pressed="false"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m10 8 6 4-6 4Z"/></svg><span data-i18n="video">Vídeo</span></button></div>
+    <div id="staticExport"><button class="button primary wide" id="download" type="button" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg><span data-i18n="downloadPNG">Exportar PNG</span></button><p class="hint export-caption" data-i18n="pngHint">2400 × 1350 px, com o fundo selecionado.</p></div>
+    <div id="videoExport" hidden>
+     <div class="motion-item"><div class="motion-row"><label class="motion-label" for="breathing"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3 3 7m0-4v4h4M17 3l4 4m0-4v4h-4M7 21l-4-4m0 4v-4h4m10 4 4-4m0 4v-4h-4"/><circle cx="12" cy="12" r="3"/></svg><span data-i18n="breathing">Respiração</span></label><input class="switch" id="breathing" type="checkbox" role="switch" aria-describedby="breathingHint"></div><p class="hint motion-description" id="breathingHint" data-i18n="breathingHint"></p><div class="motion-amount" id="breathingAmount" hidden><div class="field range-field"><label class="field-label" for="breathingIntensity"><span data-i18n="intensity">Intensidade</span><span class="value" id="breathingIntensityValue">50%</span></label><input id="breathingIntensity" type="range" min="0" max="100" step="1" value="50"></div></div></div><div class="motion-item"><div class="motion-row"><label class="motion-label" for="sway"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 5h13l-3 14H4ZM2 12H0m22 0h2"/></svg><span data-i18n="sway">Balanço</span></label><input class="switch" id="sway" type="checkbox" role="switch" aria-describedby="swayHint"></div><p class="hint motion-description" id="swayHint" data-i18n="swayHint"></p><div class="motion-amount" id="swayAmount" hidden><div class="field range-field"><label class="field-label" for="swayIntensity"><span data-i18n="intensity">Intensidade</span><span class="value" id="swayIntensityValue">45%</span></label><input id="swayIntensity" type="range" min="0" max="100" step="1" value="45"></div></div></div><div class="motion-item"><div class="motion-row"><label class="motion-label" for="drift"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12c3-10 6 10 9 0s6 10 9 0"/><circle cx="12" cy="12" r="2"/></svg><span data-i18n="drift">Deslocamento</span></label><input class="switch" id="drift" type="checkbox" role="switch" aria-describedby="driftHint"></div><p class="hint motion-description" id="driftHint"></p><div class="motion-amount" id="driftAmount" hidden><div class="field range-field"><label class="field-label" for="driftIntensity"><span data-i18n="intensity">Intensidade</span><span class="value" id="driftIntensityValue">50%</span></label><input id="driftIntensity" type="range" min="0" max="100" step="1" value="50"></div></div></div>
+     <p class="hint" id="motionHint" data-i18n="motionHint">Combine os movimentos em um loop contínuo.</p>
+     <div class="export-grid"><div class="field"><label class="field-label" for="loopDuration" data-i18n="duration">Duração</label><div class="number-wrap"><input id="loopDuration" type="number" min="1" max="30" step="0.5" value="6" inputmode="decimal"><span aria-hidden="true">s</span></div></div><div class="field"><label class="field-label" for="exportSize" data-i18n="exportSize">Resolução</label><div class="select-wrap"><select id="exportSize"><option value="960">960 × 540</option><option value="1200" selected>1200 × 675</option><option value="2400">2400 × 1350</option></select></div></div></div>
+     <div class="actions"><button class="button primary" id="downloadMOV" type="button" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg><span data-i18n="downloadMOV">Exportar MOV</span></button><button class="button" id="downloadGIF" type="button" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg><span data-i18n="downloadGIF">Exportar GIF</span></button></div><p class="hint" data-i18n="alphaHint">MOV preserva a transparência suave. No GIF, a transparência é pontilhada.</p>
+    </div>
+   </section>
+  </fieldset>
+  <div id="exportProgress" hidden><progress id="exportMeter" max="1" value="0" aria-label="Progresso da exportação" data-i18n-aria="progress"></progress><p class="hint" id="exportMessage" role="status" aria-live="polite"></p><button class="button" id="exportCancel" type="button" data-i18n="cancel" hidden>Cancelar exportação</button></div>
+ </aside>
+</div>
+<script src="assets/region-tools.js"></script>
+<script src="assets/cold-engine.js"></script>
+<script src="assets/heat-engine.js"></script>
+<script src="assets/worker-source.js"></script>
+<script src="assets/texture-data.js"></script>
+<script src="assets/fast-renderer.js"></script>
+<script src="assets/beta-state.js"></script>
+<script src="assets/loop-export.js"></script>
+<script src="assets/i18n.js"></script>
+<script src="assets/studio-ui.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
